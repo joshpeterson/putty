@@ -208,6 +208,8 @@ void win_setup_config_box(struct controlbox *b, HWND *hwndp, int has_help,
 		  HELPCTX(translation_cyrillic),
 		  conf_checkbox_handler,
 		  I(CONF_xlat_capslockcyr));
+	ctrl_checkbox(s, "Use font ligatures", NO_SHORTCUT,
+		HELPCTX(appearance_font), conf_checkbox_handler, I(CONF_font_ligature));
 
     /*
      * On Windows we can use but not enumerate translation tables

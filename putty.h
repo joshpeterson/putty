@@ -819,6 +819,7 @@ void cleanup_exit(int);
     X(INT, NONE, height) \
     X(FONT, NONE, font) \
     X(INT, NONE, font_quality) \
+    X(INT, NONE, font_ligature) \
     X(FILENAME, NONE, logfilename) \
     X(INT, NONE, logtype) \
     X(INT, NONE, logxfovr) \

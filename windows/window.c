@@ -1348,6 +1348,27 @@ static void exact_textout(HDC hdc, int x, int y, CONST RECT *lprc,
 	       lprc, buffer, cbCount, lpDx);
 }
 
+static void textout_with_ligatures(HDC hdc, int x, int y, CONST RECT *lprc,
+			  char *lpString, UINT cbCount,
+			  CONST INT *lpDx, int opaque)
+{
+
+    GCP_RESULTS gcpr;
+    char *buffer = snewn(cbCount*2+2, char);
+    memset(&gcpr, 0, sizeof(gcpr));
+    memset(buffer, 0, cbCount*2+2);
+
+    gcpr.lStructSize = sizeof(gcpr);
+    gcpr.lpGlyphs = (void *)buffer;
+    gcpr.nGlyphs = cbCount;
+    GetCharacterPlacement(hdc, lpString, cbCount, 0, &gcpr, GCP_LIGATE);
+
+    ExtTextOut(hdc, x, y,
+	       ETO_GLYPH_INDEX | ETO_CLIPPED | (opaque ? ETO_OPAQUE : 0),
+	       lprc, buffer, cbCount, lpDx);
+}
+
+
 /*
  * The exact_textout() wrapper, unfortunately, destroys the useful
  * Windows `font linking' behaviour: automatic handling of Unicode
@@ -3689,10 +3710,17 @@ void do_text_internal(Context ctx, int x, int y, wchar_t *text, int len,
             for (i = 0; i < len; i++)
                 directbuf[i] = text[i] & 0xFF;
 
-            ExtTextOut(hdc, x + xoffset,
+			if (conf_get_int(conf, CONF_font_ligature)) {
+				textout_with_ligatures(hdc, x + xoffset,
+						y - font_height * (lattr == LATTR_BOT) + text_adjust,
+						&line_box, directbuf, len, lpDx_maybe, opaque);
+			}
+			else {
+				ExtTextOut(hdc, x + xoffset,
                        y - font_height * (lattr == LATTR_BOT) + text_adjust,
                        ETO_CLIPPED | (opaque ? ETO_OPAQUE : 0),
                        &line_box, directbuf, len, lpDx_maybe);
+			}
             if (bold_font_mode == BOLD_SHADOW && (attr & ATTR_BOLD)) {
                 SetBkMode(hdc, TRANSPARENT);
 
